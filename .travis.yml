@@ -1,27 +1,41 @@
 language: groovy
+
 jdk:
 - oraclejdk7
-branches:
-  only:
-  - master
+
+sudo: false
+
 before_install:
-- rm -rf ~/.gvm
-- curl -s get.gvmtool.net > ~/install_gvm.sh
-- chmod 775 ~/install_gvm.sh
-- ~/install_gvm.sh
-- echo "gvm_auto_answer=true" > ~/.gvm/etc/config
-- source ~/.gvm/bin/gvm-init.sh
-- GRAILS_VERSION=`grep '^app\.grails\.version=' ./application.properties | sed -e
-  's/^app\.grails\.version=//g'`
-- gvm install grails $GRAILS_VERSION || true
+- export TZ=Europe/Stockholm
+- date
+- rm -rf ~/.sdkman
+- curl -s http://get.sdkman.io | bash
+- echo "sdkman_auto_answer=true" > ~/.sdkman/etc/config
+- source ~/.sdkman/bin/sdkman-init.sh
+- GRAILS_VERSION=`grep '^app\.grails\.version=' ./application.properties | sed -e 's/^app\.grails\.version=//g'`
+- sdk install grails $GRAILS_VERSION || true
+
 before_script:
-- mkdir -p ~/.grails; wget -q -O ~/.grails/settings.groovy https://raw.githubusercontent.com/AtlasOfLivingAustralia/travis-build-configuration/master/travis_grails_settings_new.groovy
-- MAVEN_REPO="ala-repo-snapshot"; grep '^app\.version=' ./application.properties |
-  grep -q "\-SNAPSHOT"; if [ "$?" = "1" ]; then MAVEN_REPO="ala-repo-release"; fi;
-script: grails clean && grails refresh-dependencies --non-interactive && grails prod
-  war --non-interactive
-after_success: '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && grails prod maven-deploy --repository=$MAVEN_REPO --non-interactive'
-env:
-  global:
-  - secure: zKPxnpcJVhJ2o2uVJH5rKa+2iiFTaO+VLyLYNCswGIVNBncmvXyeAJf9ifIVHtAYZ60MkiExpSvc0mEceLKRWUnupbxncbB8K9oe+T/v27IhoFG+lfjdDH0s445+h5DhAf9f/DpmcL8BK7WSXsw/Li14RrPZNXTwwERHev0D+zM=
-  - secure: lSLlTOjyKWA2TShtSmV8gyXkKClZqXLdHzqIL/FELcvUcDWuB9+atPxmFjCzq83gsRc4S9H4iw/XGvId+8B92hdmwVT4LkWEHCyRBijLtdZMMUeJ02NXq0+jX4dCfTDekxUxmLOip//pUumgMhuPbrMBVMx5MDWrOOigtqqdFII=
+- GRAILS_VERSION_NUMBER=`echo $GRAILS_VERSION | sed -e 's/\.[0-9]*$//g' -e 's/\.//g' | tr -d "\r"`
+- echo "GRAILS_VERSION_NUMBER:$GRAILS_VERSION_NUMBER"
+- GRAILS_SETTINGS_FILE="travis_grails_settings_new.groovy"
+- if [ "$GRAILS_VERSION_NUMBER" -lt "23" ]; then GRAILS_SETTINGS_FILE="travis_grails_settings_old.groovy"; fi;
+- echo "GRAILS_SETTINGS_FILE:$GRAILS_SETTINGS_FILE"
+- mkdir -p ~/.grails
+- wget -q -O ~/.grails/settings.groovy https://raw.githubusercontent.com/AtlasOfLivingAustralia/travis-build-configuration/master/$GRAILS_SETTINGS_FILE
+
+script:
+- grails clean && grails refresh-dependencies --non-interactive && grails prod war --non-interactive
+
+deploy:
+  provider: releases
+  api_key:
+    secure: jiz5zWH1PAsSc/Mx6WZP3CdBcKbDL8jxGCLLZaF6ZxnrAL7kIF6mzbEEcAsyxqCt/dO8tI0y0y3m+17VjctfPkNOkyI+tBtiZiQ5Xl9fBss5y2otHt2rt4qa252mjni6QdtozhL4LsF7hjcnTDkU/zigc5RN+muXM4SUNmNf6dRBW/IRRZhHTA9EW8OV/aNwTTWpbO16w9NppVWTtM8mt09Wd1/fJ98hkYYC3Xj7irZQ3TWmjbIjUE/3+/73L5XTV/kOjK2eQNsmH+vnmRL+ZfiJXazxcxO10Za3k4kG9mrUljZz+AKkJOx5LPL+wD5COqVGJWvMJlwJO4+5CQ4xXkuOvQVTG8mGgTIloOmhoKjztyNM/76S5x/A4+9egEHUfTnImzINUna9qKbZBwvDwtsSLvXzhEgEiFi8jSuN0/HYWDdjW8apRDJnbAmkMCH5cBlnWS+hVLx+eZVQP8OU8AELc3GdDUNLTCWJ0qwvx9uVzmJE7DbOCUBv5cBdTiFu9sXIpExfQJmWqC3c/+zgWyAbYFXYrB3mxjthLYNxnj43XKQKncW7YmudGwtFczsq8IDcw+zekWDmPSE9wQZfVZQHcvAL0IPVuOQBnjECx8m3igzoSK+JW3gU2CClSVo9cRCqpUYsp5IaXN92j1bF5c6uxJXO5JVSV5ZdftSq/Is=
+  file_glob: true
+  file: "target/webapi-*.war"
+  skip_cleanup: true
+  overwrite: true
+  on:
+    repo: shahmanash/webapi
+    all-branches: true
+    tags: true
