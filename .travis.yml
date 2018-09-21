@@ -17,7 +17,7 @@ deploy:
   api_key:
     secure: EYb/SvCjaMSNLODJGtGM8+wBX+5+cuv9JwjTJy1skQUOSJYbedqqfu6dAXO+VT7tBQVOggAHxRTsLrqINNPJY2ti+CNFdBUsVK6b/dJivqg8Xl+4T871P3UKwuVEGMlpzJCgWTPKg6XhLyqLqLHCw2/dDct6giTGJ5Kb2JYyx/zUpMxTxDmfK+Xi72o8w0wgUH5rk1bih0jXERT2Zfyq1pHs3NTO7Lw33xhtELX7NGvLPGHqn77/JCt7aQd09jrG42Otv3geY1yrYkWxEHPB2R3ljUu6dxDfOOD0zmfM99miHU52bGe5Yx9A7M80bVHQA+EgV2CRLAnnSi/cjqqGaafnkIByG6gb/MZ2xNa8KEnuEZa/7iO7L/ZKElkMe5SOYcXB1WXCl6RX9Jrv/5pGugzo/VLfQWHza715ztyAvUqLAQqqWDF/BwEvvP+x7PJavtKaKomqVLvrw+nQ1dAcx6fRUGMedHPJnSrogHVup6Ln4bdpfRVy8aT9P4Mk3kShPJmQqey1CMqMxa075LX4JZlxWQ27UmpeoO68ZlQOeeqZMXYZIeMtn9GXXrOxKH2iuKWH09HYH0vEC5+LjT3YOwIRbE4JWf6WWdF8s2LUEtLREgZYIx/TMB2DUG81KzxwR2m6FGgI03lZNzeAVyYdqrCic9/ZciMdx7d0euKd+3Y=
   file_glob: true
-  file: "target/webapi-*.war"
+  file: "build/libs/webapi-*.war"
   skip_cleanup: true
   overwrite: true
   on:
