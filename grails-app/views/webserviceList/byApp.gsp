@@ -2,9 +2,13 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta name="layout" content="main"/>
-		<title>Web service API</title>
-        <r:require modules="webapi,tooltip"/>
+        <meta name="layout" content="${grailsApplication.config.skin.layout}"/>
+        <meta name="breadcrumb" content="${grailsApplication.config.application.title}"/>
+        <title>${grailsApplication.config.application.title} | ${grailsApplication.config.skin.orgNameLong}</title>
+
+        <asset:stylesheet src="webapi"></asset:stylesheet>
+        <asset:javascript src="bootstrap-tooltip"></asset:javascript>
+
         <g:if test="${!isEditor}">
             <style type="text/css">
             .editorFunctions { display:none; }
@@ -12,9 +16,8 @@
         </g:if>
 	</head>
 	<body>
-        <a href="#page-body" class="skip"><g:message code="default.link.skip.label" default="Skip to content&hellip;"/></a>
-        <div class="pull-right editorFunctions">
-                <ul class="nav nav-pills">
+    <div class="editorFunctions">
+        <ul class="nav nav-pills pull-right">
                   <li class="dropdown">
                     <a class="dropdown-toggle"
                        data-toggle="dropdown"
@@ -40,8 +43,6 @@
 		<div  role="main">
 			<h1>Web service API</h1>
             <p>
-                <span class="hidden-phone">The (nearly) complete listing of the web services for the ALA. Send complements/issues to support@ala.org.au. <br/></span>
-
                 <g:if test="${byCategory}">
                     The webservices are listed by category. To list by application, <g:link action="byApp">click here</g:link>.
                 </g:if>
@@ -49,14 +50,18 @@
                     The webservices are listed by application. To list by category, <g:link action="byCategory">click here</g:link>.
                 </g:else>
             </p>
-            <div class="pull-right"><div class="btn" onclick="expandApis()"><i class="icon-plus"></i> Expand All</div> <div class="btn" onclick="collapseApis()"><i class="icon-minus"></i> Collapse All</div></div>
+
+            <div class="pull-right"><div class="btn btn-primary" onclick="expandApis()"><i
+                    class="fa fa-plus"></i> Expand All</div>
+
+                <div class="btn btn-primary" onclick="collapseApis()"><i class="fa fa-minus"></i> Collapse All</div>
+            </div>
             <cache:block>
                 <g:render template="byGroup" model="[wsByGroup:wsByGroup]"/>
             </cache:block>
 		</div>
 	</body>
-<r:script>
-
+<asset:script>
 $(function() {
     //add click events for links
     $( ".webServiceShowDetails" ).click(function() {
@@ -72,6 +77,6 @@ function expandApis(){
 function collapseApis(){
     $('.webServiceDetails').attr('style','display:none')
 }
-</r:script>
+</asset:script>
 
 </html>

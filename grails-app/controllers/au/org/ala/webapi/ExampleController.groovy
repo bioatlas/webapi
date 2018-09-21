@@ -1,13 +1,27 @@
 package au.org.ala.webapi
 
-import org.springframework.dao.DataIntegrityViolationException
+import com.opencsv.CSVWriter
+import grails.config.Config
+import grails.core.support.GrailsConfigurationAware
 
-class ExampleController {
+import static org.springframework.http.HttpStatus.OK
 
-    static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
+class ExampleController implements GrailsConfigurationAware {
+
+    static scaffold = Example
 
     def exampleService
     def combinedCacheService
+
+    String csvMimeType
+    String encoding
+
+    @Override
+    void setConfiguration(Config co) {
+        csvMimeType = co.getProperty('grails.mime.types.csv', String, 'text/csv')
+        encoding = co.getProperty('grails.converters.encoding', String, 'UTF-8')
+
+    }
 
     def index() {
         redirect(action: "list", params: params)
@@ -18,43 +32,44 @@ class ExampleController {
         [exampleInstanceList: Example.list(params), exampleInstanceTotal: Example.count()]
     }
 
-    def create() {
-        [exampleInstance: new Example(params)]
-    }
+    def exportAsCsv(Long id) {
+        List outputList
+        final String filename = 'output.csv'
 
-    def createForWS() {
-        def webService = WebService.get(params.id)
-        def wsParams = webService.getSortedParams()
-        def exampleParams = []
-        if(wsParams){
-            wsParams.eachWithIndex { wsParam, idx -> exampleParams.add(idx, new ExampleParam(param:wsParam))  }
-        }
+        if (id) {
+            def app = App.findById(id)
+            log.debug "app = ${app}"
+            def webServices = WebService.findAllByApp(app)
+            filename = "${app}.csv"
+            log.debug "webServices = ${webServices}"
 
-        def example = new Example(params)
-        example.params = exampleParams
-        example.webService = webService
+            if (webServices) {
+                def examples = Example.findAllByWebServiceInList(webServices)
+                log.debug "Found ${examples.size()} examples => ${examples}"
+                outputList = examples.collect { [it.name, it.description, it.webService.httpMethod.join("; "), it.webService.outputFormat.join("; "), it.queryUrl] as String[] }
+            }
 
-        combinedCacheService.clearCache()
-        render(view:'create', model:[exampleInstance: example, webService:webService])
-    }
-
-    def save() {
-        def exampleInstance = new Example(params)
-        if (!exampleInstance.save(flush: true)) {
-            render(view: "create", model: [exampleInstance: exampleInstance])
-            return
-        }
-
-        storeParams(exampleInstance, params)
-
-        flash.message = message(code: 'default.created.message', args: [message(code: 'example.label', default: 'Example'), exampleInstance.id])
-
-        combinedCacheService.clearCache()
-        if(params.returnTo){
-            redirect(url: params.returnTo)
         } else {
-            redirect(action: "show", id: exampleInstance.id)
+            return render(status: 400, text: "App id not provided - choose one of: ${App.list().collect{it.id + ' = '  + it.name}.join(' | ')}")
         }
+
+        OutputStream outs = response.outputStream
+        response.status = OK.value()
+        response.contentType = "${csvMimeType};charset=${encoding}";
+        response.setHeader "Content-disposition", "attachment; filename=${filename}"
+
+        Writer outputStreamWriter = new OutputStreamWriter(outs);
+        CSVWriter writer = new CSVWriter(outputStreamWriter)
+        writer.writeNext(["Name", "Description", "http method", "output format", "URL"] as String[]) // header line
+
+        outputList.each { String[] entry ->
+            writer.writeNext(entry)
+        }
+
+        writer.flush()
+        writer.close()
+        outs.flush()
+        outs.close()
     }
 
     def show(Long id) {
@@ -83,17 +98,6 @@ class ExampleController {
                 exampleInstance.params << ep
             }
         }
-    }
-
-    def edit(Long id) {
-        def exampleInstance = Example.get(id)
-        if (!exampleInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'example.label', default: 'Example'), id])
-            redirect(action: "list")
-            return
-        }
-
-        [exampleInstance: exampleInstance]
     }
 
     def update(Long id, Long version) {
@@ -128,33 +132,12 @@ class ExampleController {
         //add new
         storeParams(exampleInstance, params)
 
-
         combinedCacheService.clearCache()
         flash.message = message(code: 'default.updated.message', args: [message(code: 'example.label', default: 'Example'), exampleInstance.id])
         if(params.returnTo){
             redirect(url: params.returnTo)
         } else {
             redirect(action: "show", id: exampleInstance.id)
-        }
-    }
-
-    def delete(Long id) {
-        def exampleInstance = Example.get(id)
-        if (!exampleInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'example.label', default: 'Example'), id])
-            redirect(action: "list")
-            return
-        }
-
-        try {
-            exampleInstance.delete(flush: true)
-            combinedCacheService.clearCache()
-            flash.message = message(code: 'default.deleted.message', args: [message(code: 'example.label', default: 'Example'), id])
-            redirect(action: "list")
-        }
-        catch (DataIntegrityViolationException e) {
-            flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'example.label', default: 'Example'), id])
-            redirect(action: "show", id: id)
         }
     }
 
@@ -222,8 +205,9 @@ class ExampleController {
                             break
                     }
                     final val
-                    if (order == 'desc') val = o2?.compareTo(o1) ?: -1
-                    else val = o1?.compareTo(o2) ?: 1
+                    if (order == 'desc') val = o2?.compareTo(o1 ?: 0) ?: -1
+                    else if (o1 == null && o2 == null) val = 0
+                    else val = o1?.compareTo(o2 ?: 0) ?: 1
                     val
                 }
             }
