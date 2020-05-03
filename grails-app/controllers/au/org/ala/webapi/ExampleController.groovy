@@ -23,13 +23,44 @@ class ExampleController implements GrailsConfigurationAware {
 
     }
 
-    def index() {
-        redirect(action: "list", params: params)
+    def index(Integer max) {
+        params.max = Math.min(max ?: 1000, 1000)
+        respond Example.list(params), model: [exampleCount: Example.count()]
     }
 
-    def list(Integer max) {
-        params.max = Math.min(max ?: 1000, 1000)
-        [exampleInstanceList: Example.list(params), exampleInstanceTotal: Example.count()]
+    def createForWS() {
+        def webService = WebService.get(params.webService)
+        def wsParams = webService.getSortedParams()
+        def exampleParams = []
+        if(wsParams){
+            wsParams.eachWithIndex { wsParam, idx -> exampleParams.add(idx, new ExampleParam(param:wsParam))  }
+        }
+
+        def example = new Example(params)
+        example.params = exampleParams
+        example.webService = webService
+
+        combinedCacheService.clearCache()
+        render(view:'create', model:[example: example, webService: webService])
+    }
+
+    def save() {
+        def exampleInstance = new Example(params)
+        if (!exampleInstance.save(flush: true)) {
+            render(view: "create", model: [example: exampleInstance])
+            return
+        }
+
+        storeParams(exampleInstance, params)
+
+        flash.message = message(code: 'default.created.message', args: [message(code: 'example.label', default: 'Example'), exampleInstance.id])
+
+        combinedCacheService.clearCache()
+        if(params.returnTo){
+            redirect(url: params.returnTo)
+        } else {
+            redirect(action: "show", id: exampleInstance.id)
+        }
     }
 
     def exportAsCsv(Long id) {
@@ -76,10 +107,10 @@ class ExampleController implements GrailsConfigurationAware {
         def exampleInstance = Example.get(id)
         if (!exampleInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'example.label', default: 'Example'), id])
-            redirect(action: "list")
+            redirect(action: "index")
             return
         }
-        [exampleInstance: exampleInstance]
+        [example: exampleInstance]
     }
 
     private void storeParams(exampleInstance, params) {
@@ -104,7 +135,7 @@ class ExampleController implements GrailsConfigurationAware {
         def exampleInstance = Example.get(id)
         if (!exampleInstance) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'example.label', default: 'Example'), id])
-            redirect(action: "list")
+            redirect(action: "index")
             return
         }
 
@@ -113,7 +144,7 @@ class ExampleController implements GrailsConfigurationAware {
                 exampleInstance.errors.rejectValue("version", "default.optimistic.locking.failure",
                           [message(code: 'example.label', default: 'Example')] as Object[],
                           "Another user has updated this Example while you were editing")
-                render(view: "edit", model: [exampleInstance: exampleInstance])
+                render(view: "edit", model: [example: exampleInstance])
                 return
             }
         }
@@ -121,18 +152,18 @@ class ExampleController implements GrailsConfigurationAware {
         exampleInstance.properties = params
 
         if (!exampleInstance.save(flush: true)) {
-            render(view: "edit", model: [exampleInstance: exampleInstance])
+            render(view: "edit", model: [example: exampleInstance])
             return
         }
 
         //remove old params
-        exampleInstance.params.clear()
+        exampleInstance.params?.clear()
         exampleInstance.save(flush:true)
 
         //add new
         storeParams(exampleInstance, params)
 
-        combinedCacheService.clearCache()
+        combinedCacheService?.clearCache()
         flash.message = message(code: 'default.updated.message', args: [message(code: 'example.label', default: 'Example'), exampleInstance.id])
         if(params.returnTo){
             redirect(url: params.returnTo)
@@ -160,7 +191,7 @@ class ExampleController implements GrailsConfigurationAware {
 
         def max = sortedRuns.max {it.duration}
         def min = sortedRuns.min {it.duration}
-        ["exampleInstance" : example, "sortedRuns" : sortedRuns, "min" : min, "max" : max]
+        ["example" : example, "sortedRuns" : sortedRuns, "min" : min, "max" : max]
     }
 
     /** list all machine runnable examples and web services with no examples */
@@ -222,7 +253,7 @@ class ExampleController implements GrailsConfigurationAware {
     }
 
     def callExample(Long id) {
-        final example = show(id).exampleInstance
+        final example = show(id).example
         if (!example) return
 
         final run = exampleService.callExample(example)

@@ -27,6 +27,7 @@
                 <label for="url">
                     <g:message code="webService.url.label"
                                default="Url (must start with / and exclude the base URL for the webapp)"/>
+                    <span class="required-indicator">*</span>
                 </label>
                 <g:textField name="url" value="${this.webService?.url}" class="input-xxlarge  span12"/>
             </div>
@@ -109,6 +110,11 @@
         </h4>
     </g:if>
 
+    <span class="pull-right">
+        <a href="javascript:void(0);" class="btn addRowBtn btn-ala"><i class="fa fa-plus"></i>&nbsp;Add&nbsp;parameter
+        </a>
+    </span>
+
     <table class="table">
         <thead id="paramThead">
         <th>Name</th>
@@ -127,11 +133,6 @@
         </g:if>
         </tbody>
     </table>
-    <span class="pull-right">
-        <a href="javascript:void(0);" class="btn addRowBtn btn-ala"><i class="icon-plus"></i>&nbsp;Add&nbsp;parameter
-        </a>
-    </span>
-
 </div>
 
 

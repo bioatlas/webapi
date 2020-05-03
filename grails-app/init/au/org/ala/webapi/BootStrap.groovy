@@ -119,12 +119,12 @@ class BootStrap {
 //        def ecodata = addApp("Ecodata", "Occurrence & Mapping services", "http://ecodata.ala.org.au")
 //        def lists = addApp("Lists", "Species lists", "http://lists.ala.org.au/ws")
 
-        def biocache = addApp("Biocache", "Occurrence & Mapping services", "https://bioatlas.se/biocache-service")
+        def biocache = addApp("Biocache", "Occurrence & Mapping services", "https://records.bioatlas.se/ws")
 //        def bvp = addApp("BVP", "Crowd sourcing", "http://bioatlas.se/volunteer")
-//        def analysis = addApp("Analysis", "Spatial analysis","http://bioatlas.se/alaspatial/ws")
-        def layers = addApp("Layers", "Layer services including intersect","https://bioatlas.se/layers-service")
-        def bie = addApp("BIE", "Species names and profiles", "https://bioatlas.se/bie-index")        
-        def lists = addApp("Lists", "Species lists", "https://bioatlas.se/specieslists/ws")
+        def analysis = addApp("Analysis", "Spatial analysis","http://spatial.bioatlas.se/ws")
+        def layers = addApp("Layers", "Layer services including intersect","https://spatial.bioatlas.se/ws")
+        def bie = addApp("BIE", "Species names and profiles", "https://species.bioatlas.se/ws")
+        def lists = addApp("Lists", "Species lists", "https://lists.bioatlas.se/ws")
 
 
         //categories
