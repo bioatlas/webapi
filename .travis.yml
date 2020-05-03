@@ -4,23 +4,23 @@ jdk:
 - openjdk8
 sudo: false
 before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-  - $HOME/.m2
-  - $HOME/.gradle/caches/
-  - $HOME/.gradle/wrapper/
+  - "$HOME/.m2"
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
 script:
-  - ./gradlew clean && ./gradlew war
+- "./gradlew clean && ./gradlew war"
 deploy:
   provider: releases
   api_key:
-    secure: EYb/SvCjaMSNLODJGtGM8+wBX+5+cuv9JwjTJy1skQUOSJYbedqqfu6dAXO+VT7tBQVOggAHxRTsLrqINNPJY2ti+CNFdBUsVK6b/dJivqg8Xl+4T871P3UKwuVEGMlpzJCgWTPKg6XhLyqLqLHCw2/dDct6giTGJ5Kb2JYyx/zUpMxTxDmfK+Xi72o8w0wgUH5rk1bih0jXERT2Zfyq1pHs3NTO7Lw33xhtELX7NGvLPGHqn77/JCt7aQd09jrG42Otv3geY1yrYkWxEHPB2R3ljUu6dxDfOOD0zmfM99miHU52bGe5Yx9A7M80bVHQA+EgV2CRLAnnSi/cjqqGaafnkIByG6gb/MZ2xNa8KEnuEZa/7iO7L/ZKElkMe5SOYcXB1WXCl6RX9Jrv/5pGugzo/VLfQWHza715ztyAvUqLAQqqWDF/BwEvvP+x7PJavtKaKomqVLvrw+nQ1dAcx6fRUGMedHPJnSrogHVup6Ln4bdpfRVy8aT9P4Mk3kShPJmQqey1CMqMxa075LX4JZlxWQ27UmpeoO68ZlQOeeqZMXYZIeMtn9GXXrOxKH2iuKWH09HYH0vEC5+LjT3YOwIRbE4JWf6WWdF8s2LUEtLREgZYIx/TMB2DUG81KzxwR2m6FGgI03lZNzeAVyYdqrCic9/ZciMdx7d0euKd+3Y=
-  file_glob: true
+    secure: r+lMS29rkjGRHaZyaoLd9Ree+uGduLfELmJINmAVjssmzswo6u4sLOtPL7gGmrcX8dpiTtCZhe7J2gbile2sm1AOUrlE7Or7dxG8ZMn2ymD4VBZElwNsJIeAmFwy34EIyIQ4I5dH1G7nJwIaMwuzd3bUMJhsYp+Y4ypB5ITvbvtiYEllo5S76KC2xGUGFgVP1XTPgYicBZ1MgW/OfHCI24vBi6YH1PL30yijDGuMkXqTdkuLBBkdLm7GEhnH3LZbMXI7PKQ6se0MjMVepvMWAo/SSQTwl0/jto2o1el6esGxdnYB1/pp0smt5LY7HkABnyrERsi7zd5apRkzHYDBoIdEYzNDJx0L5617g5SQ8pfeThpBIN1bF2Vw1i66mc1Rcqquf0NH4DCPrw7vaqKsE8eaWgSVIV1tiIFTQAWW54o9cY+j7GLhOsOApr3VDirAid08BWYEBgCB84a8sZMcRuo7wnv3H5Iwkw+npUTi9+wyMMnQ+G8vdREiw7Q9LlBuGpvS4Gv17vB5LDj5WtVPYPMHQmQeLzagcDZWHgIjPkGodPVt4tmpVtJ9MGmXjm39KEXVNItRjgUni7WwpADlxi79J5og536RiG3nNMAEEOq6uXfO94yx8htvyBilXMJRFn2Jkn7aHn9uRtrZt8ovV9tcnqHCNaohPaFkw0Sz6RM=
+  file_glob: 'true'
+  skip_cleanup: 'true'
+  overwrite: 'true'
   file: "build/libs/webapi-*.war"
-  skip_cleanup: true
-  overwrite: true
   on:
     repo: bioatlas/webapi
     all-branches: true
